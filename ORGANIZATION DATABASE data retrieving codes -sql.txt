@@ -1,0 +1,323 @@
+- 0. Retrieve all rows and all columns of employee table
+SELECT *
+FROM employee;
+
+-- 0. Retrieve First name and last name of ALL employees
+SELECT fname, laname
+FROM employee;
+
+
+-- 1. Retrieve details of all male employees who draw a salary which is at least 30000
+SELECT *
+FROM employee
+WHERE sex = 'M' AND salary >= 30000;
+
+-- 2. Retrieve the details of all dependents of essn 333445555
+SELECT *
+FROM dependent
+WHERE ESSN = 333445555;
+
+-- 3. Retrieve details of projects that are based out Houston or Stafford
+SELECT *
+FROM project
+WHERE plocation NOT IN('Houston' ,'Stafford');
+
+-- 4. Retrieve details of projects that are based out Houston or belongs
+--    to deptartment 4
+
+SELECT *
+FROM project
+WHERE plocation NOT IN ('Houston' ,'Stafford') AND Dnumber = 4;
+
+-- 5. Display the name of the department and the year in which the manager
+--    was appointed 
+
+SELECT Dname, year(Mgr_start_date) AS Manager_Appointed_Year
+FROM department;
+
+
+
+-- 6. Display the SSN of all employees who live in Houston
+
+SELECT *
+FROM employee
+WHERE address LIKE '%Houston%';
+
+-- 6. Display employees whose name begins with J
+SELECT *
+FROM employee
+WHERE fname LIKE 'J%';
+
+
+-- 7. Display details of all (male employee who earn more than 30000) or female employees who earn less than 30000)
+SELECT *
+FROM employee
+WHERE (sex = 'M' AND salary > 30000) OR ( sex = 'F' AND salary  < 30000);
+
+
+-- 8. Display the essn of employees who have worked betwen 25 and 50 hours
+
+--      a) Use AND clause
+--      b) use BETWEEN clause  as in Hours between 25 and 30
+SELECT *
+FROM works_on
+WHERE Hours BETWEEN 25 AND 50;
+
+
+-- 9. Display the names of projects that are based out of houston or stafford
+--      a) Use OR clause
+--      b) Use IN clause as in Plocation in ('Houston', 'Stafford')
+SELECT *
+FROM project
+WHERE plocation IN ('Houston'OR 'Stafford');
+
+
+-- 10. Display the names of the project that are neither based out of houston nor out of stafford
+--      a) Use AND/OR clause
+--      b) use NOT IN clause as in Plocation NOT IN ('Houston','Stafford')
+SELECT *
+FROM project
+WHERE plocation NOT IN('Houston','Stafford');
+
+
+
+-- 11. Display the ssn and fully concatenated name of all employees
+-- 	Use CONCAT function 
+SELECT CONCAT(fname, ' ' , laname) AS Full_name
+FROM employee;
+
+
+
+-- 12. Display the employee details who does not have supervisor
+-- 	Use IS NULL as in super_ssn IS NULL
+SELECT *
+FROM employee
+WHERE super_ssn is NULL;
+
+
+-- 13. Display the ssn of employees sorted by their salary in ascending mode
+-- 	Use ORDER by SALARY
+SELECT *
+FROM employee
+ORDER BY salary ASC;
+
+
+-- 14. Sort the works_on table based on Pno and Hours
+SELECT *
+FROM works_on
+ORDER BY pno, Hours;
+
+
+-- 15. Display the average project hours 
+SELECT ROUND(AVG(Hours) , 2) AS 'Average_hours'
+FROM works_on;
+
+
+-- 16. Display the number of employees who do not have a manager
+SELECT COUNT(*) AS 'num_of_employees'
+FROM employee
+WHERE super_ssn is NULL;
+
+
+-- 17. What is the average salary of employees who do not have a manager
+
+SELECT ROUND(AVG(salary) , 2) AS 'Average_salary'
+FROM employee
+WHERE super_ssn IS NULL;
+
+-- 18. What is the highest salary of female employees
+SELECT MAX(salary) AS highest_female_salary
+FROM employee
+WHERE sex = 'F';
+
+
+-- 19. What is the least salary of male employees
+SELECT MIN(salary) AS minimum_male_salary
+FROM employee
+WHERE sex = 'M';
+
+
+-- 20. Display the number of employees in each department
+
+SELECT dno, COUNT(*) AS number_of_employees
+FROM employee
+GROUP BY dno;
+
+-- 21. Display the average salary of employees (department-wise and gender-wise)
+SELECT dno, sex, AVG(salary) AS average_Salary
+FROM employee
+GROUP BY dno, sex;
+
+-- 22. Display the number of male employees in each department
+SELECT dno, COUNT(sex) AS number_of_male_emplyees
+FROM employee
+WHERE sex = 'M'
+GROUP by dno;
+
+-- 23. Display the average, minimum, maximum hours spent in each project
+SELECT pno, ROUND(AVG(Hours), 2) AS average_hours_on_projects, MIN(Hours) AS min_hours_on_projects, 
+MAX(Hours) AS Max_hours_on_projects
+FROM works_on
+GROUP BY pno;
+
+
+-- 24. Display the year-wise count of employees based on their year of birth
+SELECT COUNT(ssn) AS num_of_employees, YEAR(birthday) AS birth_year
+FROM employee
+GROUP BY birthday;
+
+-- 25. Dipslay the number of projects each employee is working on
+SELECT ESSN AS employee_id, COUNT(pno) AS numberOf_project_works
+FROM works_on
+GROUP BY pno
+
+-- 26. Display the Dno of those departments that has at least 3 employees
+SELECT dno, COUNT(*) 
+FROM employee
+GROUP BY dno
+HAVING COUNT(*) >=3;
+
+
+
+-- 27. Among the people who draw at least 30000 salary, what is the department-wise average?
+SELECT dno , ROUND(AVG(salary) , 2) AS average_salary
+FROM employee
+WHERE salary >= 30000
+GROUP BY dno
+ORDER BY 1 ASC
+
+
+-- 27b. Instead of dno, display dname
+select dname, avg(salary) from employee inner join department on dno=dnumber where salary >= 30000 group by dname order by dname;
+
+
+-- 28. Display the fname of employees working in the Research department
+SELECT fname
+FROM employee
+WHERE dno =(SELECT Dnumber FROM department WHERE Dname = 'Research')
+ORDER BY fname;
+
+-- 29. Display the fname and salary of employees whose salary is more than the average salary of all the employees
+SELECT fname, salary
+FROM employee
+WHERE salary > (SELECT AVG(salary) FROM employee)
+ORDER by salary
+
+
+-- 30. Which project(s) have the least number of employees?
+
+select pno, count(*) numemps 
+from works_on 
+group by pno 
+having numemps = 
+	(select min(nemps) 
+	from (
+		select pno, count(*) nemps 
+		from works_on group by pno
+	     ) tempproj
+	 );
+
+
+-- 31. Display the fname of those employees who work for at least 20 hours
+SELECT employee.fname , works_on.Hours
+FROM employee INNER JOIN works_on
+ON employee.Ssn = works_on.Essn
+WHERE works_on.Hours >= 20;
+
+
+-- 32. What is the average salary of those employees who have at least one
+--     dependent
+
+SELECT ssn, AVG(salary)   FROM employee GROUP BY ssn
+WHERE = (SELECT ssn, AVG(salary) FROM employee)
+GROUP BY ssn
+
+
+
+use company
+-- JOIN Examples
+
+select * 
+from employee inner join department on employee.dno = department.dnumber;
+
+select *
+from employee e inner join department d on e.dno = d.dnumber;
+
+select e.fname, e.lname, d.dname
+from employee e inner join department d on e.dno = d.dnumber;
+
+
+
+
+-- 33. Display the ssn, lname and the name of the department of all the employees
+/*with WHERE clause */
+SELECT ssn, fname , Dname
+FROM employee , department
+WHERE dno = Dnumber
+
+/*with inner join */
+
+SELECT employee.ssn, employee.fname, department.Dname
+FROM employee INNER JOIN department
+ON employee.dno = department.Dnumber;
+
+
+-- 34. Display the ssn, lname, name of project of all the employees
+SELECT employee.ssn, employee.laname, project.pname
+FROM employee INNER JOIN works_on
+INNER JOIN project
+ON works_on.pno = project.pnumber;
+
+/* with Where clause */
+SELECT ssn, laname, pname
+FROM employee e, project p
+WHERE e.dno = p.Dnumber;
+
+
+-- 35a. Display the ssn, their department, the project they work on and
+--     the name of the department which runs that project
+-- 	Output heading: ssn, emp-dept-name, pname, proj-dept-no
+
+SELECT employee.ssn, department.Dname,  project.Dnumber, project.pname		
+FROM employee INNER JOIN department
+ON employee.dno = department.Dnumber
+INNER JOIN project 
+ON department.Dnumber = project.Dnumber;
+
+
+-- 35b. Display the deptname, the project the department runs
+-- 	Output heading: dept-name, pname
+
+SELECT department.Dnumber  , project.pname		
+FROM department INNER JOIN project
+ON project.Dnumber = department.Dnumber;
+
+
+
+
+-- 36. What is the name of the department that has least number of 
+--     employees?
+SELECT Dname 
+FROM employee e, department d 
+WHERE e.dno=d.Dnumber 
+GROUP BY dno HAVING COUNT(ssn) =
+   (SELECT MIN(mycount) 
+    FROM (SELECT count(ssn) AS mycount 
+        FROM employee
+         GROUP BY dno
+          ) mytable
+     );
+
+
+
+
+-- 37. Display the fname of the employee along with the fname of the manager
+
+
+	select e.fname 'EmpName', m.fname 'MgrName'
+	from employee e, employee m
+ 	where e.super_ssn = m.ssn;
+	
+
+
+
